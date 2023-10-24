@@ -20,7 +20,7 @@ pipeline {
         stage('Deploy') {
             steps {
                 echo "deploying the application"
-                sh 'sudo -i systemctl restart my-flask-app.service'
+                sh 'sudo systemctl restart my-flask-app.service'
             }
         }
     }
