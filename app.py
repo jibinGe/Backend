@@ -105,6 +105,7 @@ def embroyoClassifier(file,clinic_name,patient_id):
 
 
 app = Flask(__name__)
+app.config['SECRET_KEY'] = '8e2519caaa5e9a59d6fc918c8a6c2888245316bdcc8f211a'
 # CORS(app, origins='http://13.228.104.12')
 CORS(app)
 
