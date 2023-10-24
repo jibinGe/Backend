@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>System Metrics Dashboard</title>
+    <!-- <meta http-equiv="refresh" content="10"> -->
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        .container {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 30px;
+        }
+        .metric-card {
+            border: 1px solid #ccc;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+            width: 30%;
+        }
+        .metric-card h2 {
+            margin-top: 0;
+            color: #333;
+        }
+        .metric-card p {
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <h1>System Metrics Dashboard</h1>
+    <div class="container">
+        <div class="metric-card">
+            <h2>CPU Usage</h2>
+            <p>{{ cpu_usage }}%</p>
+        </div>
+        <div class="metric-card">
+            <h2>Memory Usage</h2>
+            <p>{{ memory_usage }}%</p>
+        </div>
+        <div class="metric-card">
+            <h2>Disk Usage</h2>
+            <p>{{ disk_usage }}%</p>
+        </div>
+    </div>
+    <div class="container">
+        <div class="metric-card">
+            <h2>my-flask-app Memory</h2>
+            <p>{{ flask_app_memory|round(2) }} MB</p>
+        </div>
+        <div class="metric-card">
+            <h2>db Memory</h2>
+            <p>{{ db_memory|round(2) }} MB</p>
+        </div>
+    </div>
+
+    <!-- <div class="container">
+        <div class="metric-card">
+            <h2>my-flask-app CPU Usage</h2>
+            <p>{{ flask_app_cpu }}%</p>
+        </div>
+        <div class="metric-card">
+            <h2>db CPU Usage</h2>
+            <p>{{ db_cpu }}%</p>
+        </div>
+    </div> -->
+    <div class="container">
+        <canvas id="cpuUsageChart"></canvas>
+    </div>
+</body>
+<script>
+    // Get the canvas element
+    var cpuUsageChartCanvas = document.getElementById("cpuUsageChart");
+
+    // Initialize the Chart.js context
+    var cpuUsageChart = new Chart(cpuUsageChartCanvas, {
+        type: 'line',
+        data: {
+            labels: [],  // Empty initial labels
+            datasets: [{
+                label: 'CPU Usage (%)',
+                data: [],    // Empty initial data
+                borderColor: 'rgba(75, 192, 192, 1)',
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                borderWidth: 1,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    type: 'linear',
+                    position: 'bottom'
+                },
+                y: {
+                    min: 0,
+                    max: 100
+                }
+            }
+        }
+    });
+
+    // Function to update the chart with new CPU usage data
+    function updateCpuUsageChart(cpuUsage) {
+        // Add current time as label
+        var currentTime = new Date().toLocaleTimeString();
+        cpuUsageChart.data.labels.push(currentTime);
+
+        // Add new CPU usage value to data
+        cpuUsageChart.data.datasets[0].data.push(cpuUsage);
+
+        // Limit the number of data points displayed (e.g., last 10)
+        var maxDataPoints = 10;
+        if (cpuUsageChart.data.labels.length > maxDataPoints) {
+            cpuUsageChart.data.labels.shift();
+            cpuUsageChart.data.datasets[0].data.shift();
+        }
+
+        // Update the chart
+        cpuUsageChart.update();
+    }
+
+    // Periodically update the chart with new CPU usage
+    setInterval(function() {
+        // Replace 'getLatestCpuUsage()' with a function to fetch latest CPU usage data
+        var latestCpuUsage = getLatestCpuUsage();
+        updateCpuUsageChart(latestCpuUsage);
+    }, 10000);  // Update every 10 seconds
+</script>
+
+</html>

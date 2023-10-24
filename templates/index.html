@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Images Annotator</title>
+</head>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+    }
+    img {
+        width: 720px;
+        height: auto;
+        margin-top: 20px;
+    }
+    h1 {
+        color: #333;
+        text-align: center;
+    }
+    .image-wrapper {
+        text-align: center;
+    }
+    p {
+        text-align: center;
+    }
+    form {
+        text-align: center;
+        margin-top: 20px;
+    }
+    select {
+        font-size: 30px;
+        padding: 5px;
+        border-radius: 5px;
+    }
+    input {
+        font-size: 30px;
+        padding: 5px;
+        border-radius: 5px;
+    }
+    label{
+        font-size: 30px;
+    }
+    button[type="submit"] {
+        background-color: #007BFF;
+        color: #FFF;
+        border: none;
+        padding: 30px 50px;
+        font-size: 45px;
+        border-radius: 5px;
+        cursor: pointer;
+        margin-bottom: 5%;
+    }
+    button[type="submit"]:hover {
+        background-color: #0056b3;
+    }
+    .save-heading {
+        text-align: center;
+    }
+    .buttons-container {
+        text-align: center;
+    }
+    .buttons-container form {
+        display: inline-block;
+    }
+    .input-container {
+        text-align: center;
+        margin-top: 1%;
+    }
+</style>
+
+<body>
+    <marquee behavior="scroll" direction="left" style="color: rgb(94, 238, 94); font-weight: bold;">
+        📢 Important Update: We've made some exciting improvements to enhance your experience.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        Speed of the page is increased.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        Now you can start from where you have stopped.
+    </marquee>
+    <h1><span id="imageIndex"></span></h1>
+    <div class="image-wrapper">
+        <img id="annotatedImage" alt="">
+    </div>
+    <p>File Name: <span id="imageFilename"></span></p>
+    <div class="buttons-container">
+        <button id="previousButton" type="submit">Previous</button>
+        <button id="nextButton" type="submit">Next</button>
+        <button id="nextButtonWithoutSave" type="submit" hidden>Next Without Save</button>
+    </div>
+
+    <div class="input-container">
+        <label for="name">Name:</label>
+        <input style="margin-top: 10%;" type="text" name="name" id="name" placeholder="Embryologist Name">
+    </div>
+
+    <div class="input-container">
+        <form action="/Annotation" method="get">
+            <label for="Index">Get the image by Index:</label>
+            <input style="margin-top: 10%;" type="text" name="index" id="current_index" placeholder="Index Number">
+            <input type="hidden" name="new_name" value="{{ new_name }}">
+            <button type="submit">Get</button>
+        </form>
+    </div>
+
+    <form action="/save-s3" method="post" id="saveForm">
+        <label for="annotation_option">Annotation Option:</label>
+        <select style="margin-top: 10%;" name="annotation_option" id="annotation_option">
+            <option value="---">Can't grade</option>
+        </select>
+        <br>
+        <label for="comment_option">Comment Option:</label>
+        <select style="margin-top: 10%;" name="comment_option" id="comment_option">
+            <option value="---">No Comment</option>
+        </select>
+
+        <input type="hidden" name="new_filename" id="new_filename">
+        <input type="hidden" name="new_name" id="new_name" placeholder="Embryologist Name">
+        <input type="hidden" name="current_image_url" id="current_image_url">
+        <input type="hidden" name="current_indexx" id="current_indexx">
+        <input type="hidden" name="current_image_filename" id="current_image_filename">
+
+        <br>
+
+        <button id="saveButton" style="margin-top: 15%;" type="submit">Save Annotation</button>
+    </form>
+
+
+    <script>
+        const url = new URL(window.location);
+        var image_data = {{ image_data|tojson|safe }};
+        var currentIndex = {{ current_index }};
+        var imageIndexElement = document.getElementById('imageIndex');
+        var imageFilenameElement = document.getElementById('imageFilename');
+        var annotatedImageElement = document.getElementById('annotatedImage');
+        var nameElement = document.getElementById('name');
+        var annotationOptionElement = document.getElementById('annotation_option');
+        var commentOptionElement = document.getElementById('comment_option');
+        var newFilenameElement = document.getElementById('new_filename');
+        const newImageNameElement = url.searchParams.get('new_name');
+        var currentImageUrlElement = document.getElementById('current_image_url');
+        var currentIndexElement = document.getElementById('current_index');
+        var currentImageFilenameElement = document.getElementById('current_image_filename');
+        var saveButtonElement = document.getElementById('saveButton');
+        var nextButtonElement = document.getElementById('nextButton');
+        var nextButtonWithoutElement = document.getElementById('nextButtonWithoutSave');
+        var previousButtonElement = document.getElementById('previousButton');
+
+        var currentIndexElementt = document.getElementById('current_indexx');
+
+        newFilenameElement.value = generateNewFilename();
+        document.getElementById("new_name").value = newImageNameElement;
+        // Function to load images based on current_index
+        function loadCurrentImage() {
+            var currentImage = image_data[currentIndex];
+            annotatedImageElement.src = currentImage.url;
+            annotatedImageElement.alt = currentImage.filename;
+            imageFilenameElement.innerText = currentImage.filename;
+            imageIndexElement.innerText = `Annotator: ${currentIndex}/${image_data.length - 1} -> ${currentImage.filename}`;
+            console.log(newImageNameElement)
+            document.getElementById("name").value = newImageNameElement;
+            currentImageFilenameElement.value = currentImage.filename;
+            currentIndexElement.value = currentIndex;
+            currentIndexElementt.value = currentIndex;
+            currentImageUrlElement.value = currentImage.url;
+        }
+
+        // Call the function to load the current image when the page loads
+        window.addEventListener('load', loadCurrentImage);
+
+        // Click event for the "Next" button
+        nextButtonElement.addEventListener('click', function() {
+            var button2 = document.getElementById("saveButton");
+            button2.click();
+            if (currentIndex < image_data.length - 1) {
+                currentIndex++;
+                loadCurrentImage();
+            }
+        });
+
+        nextButtonWithoutElement.addEventListener('click', function() {
+            if (currentIndex < image_data.length - 1) {
+                currentIndex++;
+                loadCurrentImage();
+            }
+        });
+
+        // Click event for the "Previous" button
+        previousButtonElement.addEventListener('click', function() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                loadCurrentImage();
+            }
+        });
+
+        // Form submission event
+        saveButtonElement.addEventListener('click', function() {
+            nameElement.value = newImageNameElement;
+            currentIndexElement.value = currentIndex;
+            currentImageUrlElement.value = annotatedImageElement.src;
+            currentImageFilenameElement.value = image_data[currentIndex].filename;
+            newFilenameElement.value = generateNewFilename();
+            console.log(newFilenameElement.value)
+        });
+
+        // Function to generate a new filename based on selected options
+        function generateNewFilename() {
+            var currentImage = image_data[currentIndex];
+            var currentImageFilename = currentImage.filename;
+            var annotationOption = annotationOptionElement.value;
+            var commentOption = commentOptionElement.value;
+            var fileExtension = currentImageFilename.split('.').pop();
+            var baseFilename = currentImageFilename.replace(/\.[^/.]+$/, "");
+            return `${newImageNameElement}_${commentOption}_${baseFilename}_${annotationOption}.${fileExtension}`;
+        }
+
+        // JavaScript: Add the annotation_options to the dropdown
+        const annotationOptions = [
+            "2AA", "2AB", "2BA", "2BB", "2CA", "2AC", "2CB", "2BC", "2CC",
+            "3AA", "3AB", "3BA", "3BB", "3CA", "3AC", "3CB", "3BC", "3CC",
+            "4AA", "4AB", "4BA", "4BB", "4CA", "4AC", "4CB", "4BC", "4CC",
+            "5AA", "5AB", "5BA", "5BB", "5CA", "5AC", "5CB", "5BC", "5CC",
+            "6AA", "6AB", "6BA", "6BB", "6CA", "6AC", "6CB", "6BC", "6CC",
+        ];
+
+        const selectElement1 = document.getElementById("annotation_option");
+
+        // Loop through the annotationOptions array and create an option for each value
+        annotationOptions.forEach(optionValue => {
+            const option = document.createElement("option");
+            option.value = optionValue;
+            option.textContent = optionValue;
+            selectElement1.appendChild(option);
+        });
+
+        // JavaScript: Add the comment_option values to the dropdown
+        const commentOptions = [
+            "Blur", "Degenerated", "Collapsed", "Non_blastocyst"
+        ];
+
+        const selectElement2 = document.getElementById("comment_option");
+
+        // Loop through the commentOptions array and create an option for each value
+        commentOptions.forEach(optionValue => {
+            const option = document.createElement("option");
+            option.value = optionValue;
+            option.textContent = optionValue;
+            selectElement2.appendChild(option);
+        });
+
+        // Define a function that will be called when the select elements change
+        function handleOptionChange() {
+            // Get the selected value from the "Annotation Option" dropdown
+            const annotationOption = document.getElementById("annotation_option").value;
+
+            // Get the selected value from the "Comment Option" dropdown
+            const commentOption = document.getElementById("comment_option").value;
+
+            // Do something with the selected values, e.g., call a function or perform an action
+            console.log("Annotation Option:", annotationOption);
+            console.log("Comment Option:", commentOption);
+            // Call your function or perform the desired action here.
+            var new_file=generateNewFilename();
+            newFilenameElement.value = generateNewFilename();
+            console.log("new name:",new_file)
+        }
+
+        // Get the select elements
+        const annotationSelect = document.getElementById("annotation_option");
+        const commentSelect = document.getElementById("comment_option");
+
+        // Add change event listeners to the select elements
+        annotationSelect.addEventListener("change", handleOptionChange);
+        commentSelect.addEventListener("change", handleOptionChange);
+
+        // window.addEventListener('beforeunload', function() {
+        //     // Get the current_index and name values
+        //     var currentIndexValue = currentIndexElement.value;
+        //     var nameValue = nameElement.value;
+
+        //     // Save the values to local storage
+        //     localStorage.setItem('current_index', currentIndexValue);
+        //     localStorage.setItem('name', nameValue);
+        // });
+
+        // // Load the saved values from local storage
+        // var savedCurrentIndex = localStorage.getItem('current_index');
+        // var savedName = localStorage.getItem('name');
+
+        // // Check if the values exist in local storage and are not null
+        // if (savedCurrentIndex !== null) {
+        // //     currentIndex = parseInt(savedCurrentIndex); // Parse as an integer
+        // }
+
+        // if (savedName !== null) {
+        //     newImageNameElement = savedName;
+        // }
+    </script>
+</body>
+</html>

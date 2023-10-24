@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Annotation Tool</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            background-color: #ffffff;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px; /* Added margin to separate dropdown from button */
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            color: #333;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            border: none;
+            border-radius: 5px;
+            color: #fff;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome to the Annotation Tool</h1>
+        <p>Please select your name to get started:</p>
+        <form action="/Annotation" method="get" onsubmit="return redirectToNextPage()">
+            <select id="names" name="new_name" required>
+                <option value="" disabled selected>Select an option</option>
+                <option value="Esther">Esther</option>
+                <option value="Papitha">Papitha</option>
+                <option value="Usha">Usha</option>
+            </select>
+            <br> <!-- Added line break for better spacing -->
+            <button type="submit">Start Annotation</button>
+        </form>
+    </div>
+
+    <script>
+        function redirectToNextPage() {
+            var selectedName = document.getElementById("names").value;
+            if (selectedName === "") {
+                alert("Please select a name before proceeding.");
+                return false; // Prevent form submission
+            }
+            var nextPageUrl = "http://13.228.104.12:5000/Annotation?index=0&new_name=" + encodeURIComponent(selectedName);
+            window.location.href = nextPageUrl;
+            return false; // Prevent form submission
+        }
+    </script>
+</body>
+</html>
